@@ -1,6 +1,8 @@
 package com.nikhil.ticketflow.auth.controller;
 
 import com.nikhil.ticketflow.auth.dto.request.LoginRequest;
+import com.nikhil.ticketflow.auth.dto.request.LogoutRequest;
+import com.nikhil.ticketflow.auth.dto.request.RefreshTokenRequest;
 import com.nikhil.ticketflow.auth.dto.request.RegisterRequest;
 import com.nikhil.ticketflow.auth.dto.response.LoginResponse;
 import com.nikhil.ticketflow.auth.dto.response.RegisterResponse;
@@ -28,5 +30,16 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request){
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<LoginResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request){
+        return ResponseEntity.ok(authService.refreshToken(request));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@Valid @RequestBody LogoutRequest request){
+        authService.logout(request);
+        return ResponseEntity.ok().build();
     }
 }
