@@ -53,6 +53,7 @@ public class AuthService {
         UserCredentialsEntity credentials = UserCredentialsEntity.builder()
                 .user(savedUser)
                 .passwordHash(encoder.encode(request.getPassword()))
+                .lastLoginAt(LocalDateTime.now())
                 .createdAt(LocalDateTime.now())
                 .build();
 
@@ -78,6 +79,7 @@ public class AuthService {
 
         String accessToken = jwtService.generateToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
+        refreshTokenRepository.deleteAllByUser(user);
         refreshTokenRepository.save(RefreshTokenEntity.builder()
                         .user(user)
                         .refreshToken(refreshToken)
@@ -125,11 +127,20 @@ public class AuthService {
         UserEntity user = tokenEntity.getUser();
 
         String newAccessToken = jwtService.generateToken(user);
+        refreshTokenRepository.delete(tokenEntity);
+        String newRefreshToken = jwtService.generateRefreshToken(user);
+        refreshTokenRepository.save(RefreshTokenEntity.builder()
+                        .user(user)
+                        .refreshToken(newRefreshToken)
+                        .expiresAt(LocalDateTime.now().plusSeconds(jwtService.getRefreshValidity()))
+                        .revoked(false)
+                        .createdAt(LocalDateTime.now())
+                .build());
 
         return LoginResponse.builder()
                 .userId(user.getId().toString())
                 .accessToken(newAccessToken)
-                .refreshToken(refreshToken)
+                .refreshToken(newRefreshToken)
                 .email(user.getEmail())
                 .role(user.getRole().name())
                 .tokenType("Bearer")
@@ -141,7 +152,6 @@ public class AuthService {
         RefreshTokenEntity tokenEntity = refreshTokenRepository.findByRefreshToken(request.getRefreshToken())
                 .orElseThrow(() -> new RuntimeException("Refresh token not found"));
 
-        tokenEntity.setRevoked(true);
-        refreshTokenRepository.save(tokenEntity);
+        refreshTokenRepository.delete(tokenEntity);
     }
 }
