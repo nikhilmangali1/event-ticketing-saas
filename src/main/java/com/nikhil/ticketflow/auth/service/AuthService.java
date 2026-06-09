@@ -1,6 +1,8 @@
 package com.nikhil.ticketflow.auth.service;
 
 import com.nikhil.ticketflow.auth.dto.request.LoginRequest;
+import com.nikhil.ticketflow.auth.dto.request.LogoutRequest;
+import com.nikhil.ticketflow.auth.dto.request.RefreshTokenRequest;
 import com.nikhil.ticketflow.auth.dto.request.RegisterRequest;
 import com.nikhil.ticketflow.auth.dto.response.LoginResponse;
 import com.nikhil.ticketflow.auth.dto.response.RegisterResponse;
@@ -11,6 +13,7 @@ import com.nikhil.ticketflow.entity.UserCredentialsEntity;
 import com.nikhil.ticketflow.users.entity.UserEntity;
 import com.nikhil.ticketflow.users.enums.UserRole;
 import com.nikhil.ticketflow.users.repository.JpaUserRepository;
+import io.jsonwebtoken.Claims;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -92,5 +95,53 @@ public class AuthService {
                 .email(user.getEmail())
                 .role(user.getRole().name())
                 .build();
+    }
+
+    @Transactional
+    public LoginResponse refreshToken(@Valid RefreshTokenRequest request) {
+        String refreshToken = request.getRefreshToken();
+
+        if(!jwtService.isTokenValid(refreshToken)){
+            throw new RuntimeException("Invalid refreshToken token");
+        }
+
+        Claims claims = jwtService.extractClaims(refreshToken);
+        String tokenType = claims.get("tokenType", String.class);
+        if(!"REFRESH".equals(tokenType)){
+            throw new RuntimeException("Invalid token type");
+        }
+
+        RefreshTokenEntity tokenEntity = refreshTokenRepository.findByRefreshToken(refreshToken)
+                .orElseThrow(() -> new RuntimeException("refreshToken token not found"));
+
+        if(tokenEntity.getRevoked()){
+            throw new RuntimeException("Refresh token revoked");
+        }
+
+        if(tokenEntity.getExpiresAt().isBefore(LocalDateTime.now())){
+            throw new RuntimeException("Refresh token expired");
+        }
+
+        UserEntity user = tokenEntity.getUser();
+
+        String newAccessToken = jwtService.generateToken(user);
+
+        return LoginResponse.builder()
+                .userId(user.getId().toString())
+                .accessToken(newAccessToken)
+                .refreshToken(refreshToken)
+                .email(user.getEmail())
+                .role(user.getRole().name())
+                .tokenType("Bearer")
+                .build();
+    }
+
+    @Transactional
+    public void logout(@Valid LogoutRequest request) {
+        RefreshTokenEntity tokenEntity = refreshTokenRepository.findByRefreshToken(request.getRefreshToken())
+                .orElseThrow(() -> new RuntimeException("Refresh token not found"));
+
+        tokenEntity.setRevoked(true);
+        refreshTokenRepository.save(tokenEntity);
     }
 }
