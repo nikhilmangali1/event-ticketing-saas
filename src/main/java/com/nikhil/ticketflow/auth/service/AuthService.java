@@ -57,8 +57,10 @@ public class AuthService {
         }
 
         String accessToken = jwtService.generateToken(user);
+        String userId = jwtService.extractUserId(accessToken).toString();
 
         return LoginResponse.builder()
+                .userId(userId)
                 .tokenType("Bearer")
                 .accessToken(accessToken)
                 .email(user.getEmail())

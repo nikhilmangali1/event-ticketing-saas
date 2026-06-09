@@ -1,6 +1,7 @@
 package com.nikhil.ticketflow.auth.service;
 
 import com.nikhil.ticketflow.users.entity.UserEntity;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.security.Key;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.UUID;
 
 @Service
 public class JwtService {
@@ -28,11 +30,36 @@ public class JwtService {
         long now = System.currentTimeMillis();
 
         return Jwts.builder()
-                .subject(user.getEmail())
+                .subject(user.getId().toString())
                 .claim("role", user.getRole())
                 .issuedAt(new Date(now))
                 .expiration(new Date(now + accessValidity * 1000))
                 .signWith(key)
                 .compact();
+    }
+
+    public Claims extractClaims(String token){
+        return Jwts.parser()
+                .verifyWith((javax.crypto.SecretKey) key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+
+    public UUID extractUserId(String token){
+        return UUID.fromString(extractClaims(token).getSubject());
+    }
+
+    public String extractRole(String token){
+        return extractClaims(token).get("role", String.class);
+    }
+
+    public boolean isTokenValid(String token){
+        try{
+            extractClaims(token);
+            return true;
+        } catch(Exception e){
+            return false;
+        }
     }
 }
