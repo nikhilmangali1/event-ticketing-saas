@@ -1,18 +1,14 @@
-package com.nikhil.ticketflow.users.entity;
+package com.nikhil.ticketflow.entity;
 
-import com.nikhil.ticketflow.users.enums.UserRole;
-import jakarta.persistence.CollectionTable;
+import com.nikhil.ticketflow.users.entity.UserEntity;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,34 +17,34 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(name = "users")
+@Table(name = "refresh_tokens")
 @Getter
 @Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserEntity {
+public class RefreshTokenEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    private String name;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity user;
 
-    @Column(nullable = false, unique = true)
-    private String email;
+    @Column(name = "refresh_token",nullable = false, unique = true)
+    private String refreshToken;
 
-    @Enumerated(EnumType.STRING)
+    @Column(name = "expires_at", nullable = false)
+    private LocalDateTime expiresAt;
+
     @Column(nullable = false)
-    private UserRole role;
+    private Boolean revoked;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 }
