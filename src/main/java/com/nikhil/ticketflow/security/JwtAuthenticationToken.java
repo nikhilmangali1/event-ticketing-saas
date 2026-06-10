@@ -1,11 +1,13 @@
 package com.nikhil.ticketflow.security;
 
+import lombok.Getter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Collection;
 import java.util.UUID;
 
+@Getter
 public class JwtAuthenticationToken extends AbstractAuthenticationToken {
 
     private final UUID userId;
@@ -27,11 +29,4 @@ public class JwtAuthenticationToken extends AbstractAuthenticationToken {
         return userId;
     }
 
-    public UUID getUserId() {
-        return userId;
-    }
-
-    public String getUserRole(){
-        return userRole;
-    }
 }
