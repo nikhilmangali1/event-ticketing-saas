@@ -2,6 +2,7 @@ package com.nikhil.ticketflow.users.service;
 
 import com.nikhil.ticketflow.common.exceptions.BadRequestException;
 import com.nikhil.ticketflow.common.exceptions.ResourceNotFoundException;
+import com.nikhil.ticketflow.email.service.EmailService;
 import com.nikhil.ticketflow.users.dto.response.UserOrganizerResponse;
 import com.nikhil.ticketflow.users.entity.OrganizerRequestEntity;
 import com.nikhil.ticketflow.users.entity.UserEntity;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -22,6 +24,7 @@ public class AdminService {
 
     private final JpaOrganizeRequestRepository organizeRequestRepository;
     private final UserOrganizerMapper organizerMapper;
+    private final EmailService emailService;
 
     public List<UserOrganizerResponse> getAllRequests() {
         return organizeRequestRepository.findAll().stream()
@@ -47,9 +50,16 @@ public class AdminService {
         user.setUpdatedAt(LocalDateTime.now());
 
         requestEntity.setStatus(OrganizerRequestStatus.APPROVED);
-        requestEntity.setRequestedAt(LocalDateTime.now());
+        requestEntity.setReviewedAt(LocalDateTime.now());
 
         organizeRequestRepository.save(requestEntity);
+
+        emailService.sendHtmlEmail(
+                user.getEmail(),
+                "Your organizer request has been approved",
+                "organizer-approved",
+                Map.of("name", user.getName())
+        );
     }
 
     public void reject(UUID requestId) {
@@ -69,5 +79,12 @@ public class AdminService {
         requestEntity.setStatus(OrganizerRequestStatus.REJECTED);
         requestEntity.setReviewedAt(LocalDateTime.now());
         organizeRequestRepository.save(requestEntity);
+
+        emailService.sendHtmlEmail(
+                user.getEmail(),
+                "Your organizer request has been rejected",
+                "organizer-rejected",
+                Map.of("name", user.getName())
+        );
     }
 }

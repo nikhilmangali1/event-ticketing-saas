@@ -6,10 +6,11 @@ import com.nikhil.ticketflow.auth.dto.request.RefreshTokenRequest;
 import com.nikhil.ticketflow.auth.dto.request.RegisterRequest;
 import com.nikhil.ticketflow.auth.dto.response.LoginResponse;
 import com.nikhil.ticketflow.auth.dto.response.RegisterResponse;
-import com.nikhil.ticketflow.auth.repository.JpaRefreshTokenRepository;
-import com.nikhil.ticketflow.auth.repository.JpaUserCredentialsRepository;
 import com.nikhil.ticketflow.auth.entity.RefreshTokenEntity;
 import com.nikhil.ticketflow.auth.entity.UserCredentialsEntity;
+import com.nikhil.ticketflow.auth.repository.JpaRefreshTokenRepository;
+import com.nikhil.ticketflow.auth.repository.JpaUserCredentialsRepository;
+import com.nikhil.ticketflow.email.service.EmailService;
 import com.nikhil.ticketflow.users.entity.UserEntity;
 import com.nikhil.ticketflow.users.enums.UserRole;
 import com.nikhil.ticketflow.users.repository.JpaUserRepository;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -33,11 +35,12 @@ public class AuthService {
     private final JwtService jwtService;
     private final JpaUserCredentialsRepository userCredentialsRepository;
     private final JpaRefreshTokenRepository refreshTokenRepository;
+    private final EmailService emailService;
 
     @Transactional
     public RegisterResponse register(@Valid RegisterRequest request) {
 
-        if(userRepository.existsByEmail(request.getEmail())){
+        if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already registered!");
         }
 
@@ -57,6 +60,13 @@ public class AuthService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
+        emailService.sendHtmlEmail(
+                savedUser.getEmail(),
+                "Welcome to TicketFlow",
+                "welcome",
+                Map.of("name", savedUser.getName())
+        );
+
         userCredentialsRepository.save(credentials);
 
         return RegisterResponse.builder()
@@ -73,7 +83,7 @@ public class AuthService {
         UserCredentialsEntity credentials = userCredentialsRepository.findByUser(user)
                 .orElseThrow(() -> new RuntimeException("Credentials not found"));
 
-        if(!encoder.matches(request.getPassword(), credentials.getPasswordHash())){
+        if (!encoder.matches(request.getPassword(), credentials.getPasswordHash())) {
             throw new RuntimeException("Invalid email or password");
         }
 
@@ -81,11 +91,11 @@ public class AuthService {
         String refreshToken = jwtService.generateRefreshToken(user);
         refreshTokenRepository.deleteAllByUser(user);
         refreshTokenRepository.save(RefreshTokenEntity.builder()
-                        .user(user)
-                        .refreshToken(refreshToken)
-                        .expiresAt(LocalDateTime.now().plusSeconds(jwtService.getRefreshValidity()))
-                        .revoked(false)
-                        .createdAt(LocalDateTime.now())
+                .user(user)
+                .refreshToken(refreshToken)
+                .expiresAt(LocalDateTime.now().plusSeconds(jwtService.getRefreshValidity()))
+                .revoked(false)
+                .createdAt(LocalDateTime.now())
                 .build());
         String userId = jwtService.extractUserId(accessToken).toString();
 
@@ -103,24 +113,24 @@ public class AuthService {
     public LoginResponse refreshToken(@Valid RefreshTokenRequest request) {
         String refreshToken = request.getRefreshToken();
 
-        if(!jwtService.isTokenValid(refreshToken)){
+        if (!jwtService.isTokenValid(refreshToken)) {
             throw new RuntimeException("Invalid refreshToken token");
         }
 
         Claims claims = jwtService.extractClaims(refreshToken);
         String tokenType = claims.get("tokenType", String.class);
-        if(!"REFRESH".equals(tokenType)){
+        if (!"REFRESH".equals(tokenType)) {
             throw new RuntimeException("Invalid token type");
         }
 
         RefreshTokenEntity tokenEntity = refreshTokenRepository.findByRefreshToken(refreshToken)
                 .orElseThrow(() -> new RuntimeException("refreshToken token not found"));
 
-        if(tokenEntity.getRevoked()){
+        if (tokenEntity.getRevoked()) {
             throw new RuntimeException("Refresh token revoked");
         }
 
-        if(tokenEntity.getExpiresAt().isBefore(LocalDateTime.now())){
+        if (tokenEntity.getExpiresAt().isBefore(LocalDateTime.now())) {
             throw new RuntimeException("Refresh token expired");
         }
 
@@ -130,11 +140,11 @@ public class AuthService {
         refreshTokenRepository.delete(tokenEntity);
         String newRefreshToken = jwtService.generateRefreshToken(user);
         refreshTokenRepository.save(RefreshTokenEntity.builder()
-                        .user(user)
-                        .refreshToken(newRefreshToken)
-                        .expiresAt(LocalDateTime.now().plusSeconds(jwtService.getRefreshValidity()))
-                        .revoked(false)
-                        .createdAt(LocalDateTime.now())
+                .user(user)
+                .refreshToken(newRefreshToken)
+                .expiresAt(LocalDateTime.now().plusSeconds(jwtService.getRefreshValidity()))
+                .revoked(false)
+                .createdAt(LocalDateTime.now())
                 .build());
 
         return LoginResponse.builder()

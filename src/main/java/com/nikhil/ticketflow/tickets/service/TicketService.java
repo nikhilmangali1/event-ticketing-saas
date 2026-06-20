@@ -2,6 +2,7 @@ package com.nikhil.ticketflow.tickets.service;
 
 import com.nikhil.ticketflow.common.exceptions.BadRequestException;
 import com.nikhil.ticketflow.common.exceptions.ResourceNotFoundException;
+import com.nikhil.ticketflow.email.service.EmailService;
 import com.nikhil.ticketflow.events.entity.EventEntity;
 import com.nikhil.ticketflow.events.repository.JpaEventRepository;
 import com.nikhil.ticketflow.security.CurrentUser;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -29,6 +31,7 @@ public class TicketService {
     private final CurrentUser currentUser;
     private final JpaUserRepository userRepository;
     private final TicketMapper ticketMapper;
+    private final EmailService emailService;
 
     @Transactional
     public TicketBookedResponse bookTicket(UUID eventId) {
@@ -39,19 +42,19 @@ public class TicketService {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("user not found"));
 
-        if(eventEntity.getEventDate().isBefore(LocalDateTime.now())){
+        if (eventEntity.getEventDate().isBefore(LocalDateTime.now())) {
             throw new BadRequestException("Event already completed");
         }
 
-        if(ticketRepository.existsByUserIdAndEventIdAndBookingStatus(userId, eventId,BookingStatus.BOOKED)){
+        if (ticketRepository.existsByUserIdAndEventIdAndBookingStatus(userId, eventId, BookingStatus.BOOKED)) {
             throw new BadRequestException("you already booked it");
         }
 
-        if(eventEntity.getAvailableSeats() <= 0){
+        if (eventEntity.getAvailableSeats() <= 0) {
             throw new BadRequestException("No seats available");
         }
 
-        eventEntity.setAvailableSeats(Math.max(eventEntity.getAvailableSeats()-1, 0));
+        eventEntity.setAvailableSeats(Math.max(eventEntity.getAvailableSeats() - 1, 0));
         EventEntity updatedEvent = eventRepository.save(eventEntity);
 
         TicketEntity ticket = TicketEntity.builder()
@@ -62,6 +65,17 @@ public class TicketService {
                 .build();
 
         TicketEntity bookedTicket = ticketRepository.save(ticket);
+
+        emailService.sendHtmlEmail(
+                user.getEmail(),
+                "Yayy! Your ticket is booked",
+                "ticket-booked",
+                Map.of(
+                        "eventName", eventEntity.getTitle(),
+                        "venue", eventEntity.getVenue(),
+                        "ticketId", bookedTicket.getId().toString()
+                )
+        );
         return ticketMapper.toTicketBookedResponse(bookedTicket);
     }
 
@@ -82,19 +96,27 @@ public class TicketService {
 
         UUID userId = currentUser.getUserId();
 
-        if(eventEntity.getEventDate().isBefore(LocalDateTime.now())){
+        if (eventEntity.getEventDate().isBefore(LocalDateTime.now())) {
             throw new BadRequestException("Event already completed");
         }
 
-        if(!userId.equals(ticket.getUser().getId())){
+        if (!userId.equals(ticket.getUser().getId())) {
             throw new RuntimeException();
         }
 
-        if(ticket.getBookingStatus() != BookingStatus.BOOKED){
+        if (ticket.getBookingStatus() != BookingStatus.BOOKED) {
             throw new RuntimeException();
         }
 
         ticket.setBookingStatus(BookingStatus.CANCELLED);
-        eventEntity.setAvailableSeats(Math.min(eventEntity.getAvailableSeats()+1, eventEntity.getTotalSeats()));
+        eventEntity.setAvailableSeats(Math.min(eventEntity.getAvailableSeats() + 1, eventEntity.getTotalSeats()));
+        emailService.sendHtmlEmail(
+                ticket.getUser().getEmail(),
+                "Your ticket has been cancelled",
+                "ticket-cancelled",
+                Map.of(
+                        "eventName", eventEntity.getTitle()
+                )
+        );
     }
 }
