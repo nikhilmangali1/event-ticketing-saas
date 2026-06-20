@@ -1,13 +1,11 @@
-package com.nikhil.ticketflow.event.mapper;
+package com.nikhil.ticketflow.events.mapper;
 
-import com.nikhil.ticketflow.event.dto.request.CreateEventRequest;
-import com.nikhil.ticketflow.event.dto.response.EventResponse;
-import com.nikhil.ticketflow.event.entity.EventEntity;
+import com.nikhil.ticketflow.events.dto.request.CreateEventRequest;
+import com.nikhil.ticketflow.events.dto.response.EventResponse;
+import com.nikhil.ticketflow.events.entity.EventEntity;
 import com.nikhil.ticketflow.users.entity.UserEntity;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Component;
-
-import java.util.UUID;
 
 @Component
 public class EventMapper {

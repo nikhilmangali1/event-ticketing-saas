@@ -1,4 +1,4 @@
-package com.nikhil.ticketflow.event.dto.request;
+package com.nikhil.ticketflow.events.dto.request;
 
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;

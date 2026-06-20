@@ -1,6 +1,6 @@
 package com.nikhil.ticketflow.tickets.mapper;
 
-import com.nikhil.ticketflow.event.entity.EventEntity;
+import com.nikhil.ticketflow.events.entity.EventEntity;
 import com.nikhil.ticketflow.tickets.dto.response.EventDetailsResponse;
 import com.nikhil.ticketflow.tickets.dto.response.TicketBookedResponse;
 import com.nikhil.ticketflow.tickets.entity.TicketEntity;

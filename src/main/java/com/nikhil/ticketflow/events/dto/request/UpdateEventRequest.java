@@ -1,4 +1,4 @@
-package com.nikhil.ticketflow.event.dto.request;
+package com.nikhil.ticketflow.events.dto.request;
 
 import lombok.Data;
 

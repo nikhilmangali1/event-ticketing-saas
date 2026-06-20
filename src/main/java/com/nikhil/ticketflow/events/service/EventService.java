@@ -1,11 +1,13 @@
-package com.nikhil.ticketflow.event.service;
+package com.nikhil.ticketflow.events.service;
 
-import com.nikhil.ticketflow.event.dto.request.CreateEventRequest;
-import com.nikhil.ticketflow.event.dto.request.UpdateEventRequest;
-import com.nikhil.ticketflow.event.dto.response.EventResponse;
-import com.nikhil.ticketflow.event.entity.EventEntity;
-import com.nikhil.ticketflow.event.mapper.EventMapper;
-import com.nikhil.ticketflow.event.repository.JpaEventRepository;
+import com.nikhil.ticketflow.common.exceptions.BadRequestException;
+import com.nikhil.ticketflow.common.exceptions.ResourceNotFoundException;
+import com.nikhil.ticketflow.events.dto.request.CreateEventRequest;
+import com.nikhil.ticketflow.events.dto.request.UpdateEventRequest;
+import com.nikhil.ticketflow.events.dto.response.EventResponse;
+import com.nikhil.ticketflow.events.entity.EventEntity;
+import com.nikhil.ticketflow.events.mapper.EventMapper;
+import com.nikhil.ticketflow.events.repository.JpaEventRepository;
 import com.nikhil.ticketflow.security.CurrentUser;
 import com.nikhil.ticketflow.users.entity.UserEntity;
 import com.nikhil.ticketflow.users.repository.JpaUserRepository;
@@ -30,7 +32,7 @@ public class EventService {
     public EventResponse createEvent(@Valid CreateEventRequest eventRequest) {
         UUID userId = currentUser.getUserId();
         UserEntity organizer = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         EventEntity entity = eventMapper.toEntity(eventRequest, organizer);
         EventEntity savedEvent = eventRepository.save(entity);
         return eventMapper.toResponse(savedEvent, organizer);
@@ -47,7 +49,7 @@ public class EventService {
     @Transactional(readOnly = true)
     public EventResponse getEventById(UUID eventId) {
         EventEntity eventEntity = eventRepository.findById(eventId)
-                .orElseThrow(() -> new RuntimeException("Event not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Event not found"));
 
         return eventMapper.toResponse(eventEntity, eventEntity.getOrganizer());
     }
@@ -55,11 +57,11 @@ public class EventService {
     @Transactional
     public void deleteEventById(UUID eventId) {
         EventEntity eventEntity = eventRepository.findById(eventId)
-                .orElseThrow(() -> new RuntimeException("Event not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Event not found"));
 
         UUID currentUserId = currentUser.getUserId();
         if(!eventEntity.getOrganizer().getId().equals(currentUserId)){
-            throw new RuntimeException("You don't have access to delete this event");
+            throw new BadRequestException("You don't have access to delete this event");
         }
         eventRepository.delete(eventEntity);
     }
@@ -67,11 +69,11 @@ public class EventService {
     @Transactional
     public EventResponse updateEventById(UUID eventId, UpdateEventRequest request) {
         EventEntity eventEntity = eventRepository.findById(eventId)
-                .orElseThrow(() -> new RuntimeException("Event not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Event not found"));
 
         UUID currentUserId = currentUser.getUserId();
         if(!eventEntity.getOrganizer().getId().equals(currentUserId)){
-            throw new RuntimeException("You don't have access to edit this event");
+            throw new BadRequestException("You don't have access to edit this event");
         }
 
         if(request.getTitle() != null){

@@ -1,6 +1,6 @@
 package com.nikhil.ticketflow.tickets.entity;
 
-import com.nikhil.ticketflow.event.entity.EventEntity;
+import com.nikhil.ticketflow.events.entity.EventEntity;
 import com.nikhil.ticketflow.tickets.enums.BookingStatus;
 import com.nikhil.ticketflow.users.entity.UserEntity;
 import jakarta.persistence.Entity;

@@ -1,7 +1,9 @@
 package com.nikhil.ticketflow.tickets.service;
 
-import com.nikhil.ticketflow.event.entity.EventEntity;
-import com.nikhil.ticketflow.event.repository.JpaEventRepository;
+import com.nikhil.ticketflow.common.exceptions.BadRequestException;
+import com.nikhil.ticketflow.common.exceptions.ResourceNotFoundException;
+import com.nikhil.ticketflow.events.entity.EventEntity;
+import com.nikhil.ticketflow.events.repository.JpaEventRepository;
 import com.nikhil.ticketflow.security.CurrentUser;
 import com.nikhil.ticketflow.tickets.dto.response.TicketBookedResponse;
 import com.nikhil.ticketflow.tickets.entity.TicketEntity;
@@ -31,22 +33,22 @@ public class TicketService {
     @Transactional
     public TicketBookedResponse bookTicket(UUID eventId) {
         EventEntity eventEntity = eventRepository.findById(eventId)
-                .orElseThrow();
+                .orElseThrow(() -> new ResourceNotFoundException("event not found"));
 
         UUID userId = currentUser.getUserId();
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow();
+                .orElseThrow(() -> new ResourceNotFoundException("user not found"));
 
         if(eventEntity.getEventDate().isBefore(LocalDateTime.now())){
-            throw new RuntimeException("Event already completed");
+            throw new BadRequestException("Event already completed");
         }
 
         if(ticketRepository.existsByUserIdAndEventIdAndBookingStatus(userId, eventId,BookingStatus.BOOKED)){
-            throw new RuntimeException("you already booked it");
+            throw new BadRequestException("you already booked it");
         }
 
         if(eventEntity.getAvailableSeats() <= 0){
-            throw new RuntimeException("No seats available");
+            throw new BadRequestException("No seats available");
         }
 
         eventEntity.setAvailableSeats(Math.max(eventEntity.getAvailableSeats()-1, 0));
@@ -81,7 +83,7 @@ public class TicketService {
         UUID userId = currentUser.getUserId();
 
         if(eventEntity.getEventDate().isBefore(LocalDateTime.now())){
-            throw new RuntimeException("Event already completed");
+            throw new BadRequestException("Event already completed");
         }
 
         if(!userId.equals(ticket.getUser().getId())){

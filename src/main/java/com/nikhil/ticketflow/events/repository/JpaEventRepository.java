@@ -1,6 +1,6 @@
-package com.nikhil.ticketflow.event.repository;
+package com.nikhil.ticketflow.events.repository;
 
-import com.nikhil.ticketflow.event.entity.EventEntity;
+import com.nikhil.ticketflow.events.entity.EventEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,4 +1,4 @@
-package com.nikhil.ticketflow.event.dto.response;
+package com.nikhil.ticketflow.events.dto.response;
 
 import lombok.Builder;
 import lombok.Data;

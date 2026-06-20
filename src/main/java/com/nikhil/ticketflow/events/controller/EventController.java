@@ -1,9 +1,9 @@
-package com.nikhil.ticketflow.event.controller;
+package com.nikhil.ticketflow.events.controller;
 
-import com.nikhil.ticketflow.event.dto.request.CreateEventRequest;
-import com.nikhil.ticketflow.event.dto.request.UpdateEventRequest;
-import com.nikhil.ticketflow.event.dto.response.EventResponse;
-import com.nikhil.ticketflow.event.service.EventService;
+import com.nikhil.ticketflow.events.dto.request.CreateEventRequest;
+import com.nikhil.ticketflow.events.dto.request.UpdateEventRequest;
+import com.nikhil.ticketflow.events.dto.response.EventResponse;
+import com.nikhil.ticketflow.events.service.EventService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
