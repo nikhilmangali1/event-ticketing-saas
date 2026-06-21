@@ -3,6 +3,7 @@ package com.nikhil.ticketflow.users.service;
 import com.nikhil.ticketflow.common.exceptions.BadRequestException;
 import com.nikhil.ticketflow.common.exceptions.ResourceNotFoundException;
 import com.nikhil.ticketflow.security.CurrentUser;
+import com.nikhil.ticketflow.users.dto.response.MyDetailsResponse;
 import com.nikhil.ticketflow.users.dto.response.UserOrganizerResponse;
 import com.nikhil.ticketflow.users.entity.OrganizerRequestEntity;
 import com.nikhil.ticketflow.users.entity.UserEntity;
@@ -59,5 +60,33 @@ public class UserService {
         OrganizerRequestEntity savedEntity = organizeRequestRepository.save(entity);
 
         return organizerMapper.toUserOrganizerResponse(savedEntity);
+    }
+
+    public UserOrganizerResponse getMyRequest() {
+        UUID userId = currentUser.getUserId();
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("user not found"));
+
+        if (user.getRole().equals(UserRole.ORGANIZER)) {
+            throw new BadRequestException("You are already organizer");
+        }
+
+        OrganizerRequestEntity entity = organizeRequestRepository.findByUser(user)
+                .orElseThrow(() -> new ResourceNotFoundException("You haven't submitted request at"));
+
+        return organizerMapper.toUserOrganizerResponse(entity);
+    }
+
+    public MyDetailsResponse getMyDetails() {
+        UUID userId = currentUser.getUserId();
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("user not found"));
+
+        return MyDetailsResponse.builder()
+                .name(user.getName())
+                .email(user.getEmail())
+                .role(currentUser.getRole())
+                .createdAt(user.getCreatedAt())
+                .build();
     }
 }

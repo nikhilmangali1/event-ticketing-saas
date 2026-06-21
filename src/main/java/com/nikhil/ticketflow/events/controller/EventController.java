@@ -27,33 +27,33 @@ public class EventController {
     private final EventService eventService;
 
     @PostMapping("/create")
-    @PreAuthorize("hasAnyRole('USER','ADMIN','ORGANIZER')")
-    public ResponseEntity<EventResponse> createEvent(@Valid @RequestBody CreateEventRequest eventRequest){
+    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
+    public ResponseEntity<EventResponse> createEvent(@Valid @RequestBody CreateEventRequest eventRequest) {
         return ResponseEntity.ok(eventService.createEvent(eventRequest));
     }
 
     @GetMapping
     @PreAuthorize("hasAnyRole('USER','ADMIN','ORGANIZER')")
-    public ResponseEntity<List<EventResponse>> getAllEvents(){
+    public ResponseEntity<List<EventResponse>> getAllEvents() {
         return ResponseEntity.ok(eventService.getAllEvents());
     }
 
     @GetMapping("/{eventId}")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<EventResponse> getEventById(@PathVariable UUID eventId){
+    @PreAuthorize("hasRole('ORGANIZER')")
+    public ResponseEntity<EventResponse> getEventById(@PathVariable UUID eventId) {
         return ResponseEntity.ok(eventService.getEventById(eventId));
     }
 
     @DeleteMapping("/{eventId}")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Void> deleteEventById(@PathVariable UUID eventId){
+    @PreAuthorize("hasRole('ORGANIZER')")
+    public ResponseEntity<Void> deleteEventById(@PathVariable UUID eventId) {
         eventService.deleteEventById(eventId);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/{eventId}")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<EventResponse> updateEvent(@PathVariable UUID eventId, @RequestBody UpdateEventRequest updateEventRequest){
+    @PreAuthorize("hasRole('ORGANIZER')")
+    public ResponseEntity<EventResponse> updateEvent(@PathVariable UUID eventId, @RequestBody UpdateEventRequest updateEventRequest) {
         return ResponseEntity.ok(eventService.updateEventById(eventId, updateEventRequest));
     }
 }
