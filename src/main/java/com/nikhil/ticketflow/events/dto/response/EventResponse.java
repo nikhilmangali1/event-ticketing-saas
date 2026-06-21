@@ -21,4 +21,5 @@ public class EventResponse {
     private Integer totalSeats;
     private Integer availableSeats;
     private BigDecimal price;
+    private String imageUrl;
 }

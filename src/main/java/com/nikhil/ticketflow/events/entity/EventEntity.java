@@ -1,6 +1,7 @@
 package com.nikhil.ticketflow.events.entity;
 
 import com.nikhil.ticketflow.users.entity.UserEntity;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -43,4 +44,7 @@ public class EventEntity {
     private Integer totalSeats;
     private Integer availableSeats;
     private BigDecimal price;
+
+    @Column(length = 1000)
+    private String imageUrl;
 }

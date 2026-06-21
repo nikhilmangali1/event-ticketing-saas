@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class EventMapper {
-    public EventResponse toResponse(EventEntity entity, UserEntity organizer){
+    public EventResponse toResponse(EventEntity entity, UserEntity organizer) {
         return EventResponse.builder()
                 .id(entity.getId())
                 .title(entity.getTitle())
@@ -21,10 +21,11 @@ public class EventMapper {
                 .totalSeats(entity.getTotalSeats())
                 .availableSeats(entity.getAvailableSeats())
                 .price(entity.getPrice())
+                .imageUrl(entity.getImageUrl())
                 .build();
     }
 
-    public EventEntity toEntity(@Valid CreateEventRequest eventRequest, UserEntity organizer) {
+    public EventEntity toEntity(@Valid CreateEventRequest eventRequest, UserEntity organizer, String imageUrl) {
         EventEntity entity = new EventEntity();
         entity.setTitle(eventRequest.getTitle());
         entity.setOrganizer(organizer);
@@ -34,6 +35,7 @@ public class EventMapper {
         entity.setTotalSeats(eventRequest.getTotalSeats());
         entity.setAvailableSeats(eventRequest.getTotalSeats());
         entity.setPrice(eventRequest.getPrice());
+        entity.setImageUrl(imageUrl);
         return entity;
     }
 }
