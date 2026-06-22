@@ -3,6 +3,7 @@ package com.nikhil.ticketflow.tickets.dto.response;
 import lombok.Builder;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -13,5 +14,6 @@ public class EventDetailsResponse {
     private String title;
     private String description;
     private String venue;
+    private BigDecimal price;
     private LocalDateTime eventDate;
 }

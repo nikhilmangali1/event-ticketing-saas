@@ -9,13 +9,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class TicketMapper {
 
-    public TicketBookedResponse toTicketBookedResponse(TicketEntity entity){
+    public TicketBookedResponse toTicketBookedResponse(TicketEntity entity) {
         EventEntity eventEntity = entity.getEvent();
         EventDetailsResponse response = EventDetailsResponse.builder()
                 .eventId(eventEntity.getId())
                 .title(eventEntity.getTitle())
                 .description(eventEntity.getDescription())
                 .venue(eventEntity.getVenue())
+                .price(eventEntity.getPrice())
                 .eventDate(eventEntity.getEventDate())
                 .build();
 
