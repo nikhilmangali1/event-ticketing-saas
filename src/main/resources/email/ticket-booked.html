@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>{{title}}</title>
+    <title>Booking Confirmed</title>
 </head>
 
 <body style="
@@ -24,64 +24,61 @@
     box-shadow:0 4px 12px rgba(0,0,0,0.05);
 ">
 
-        <div style="
-    margin-bottom:32px;
-">
-
-            <h1 style="
-    margin:0;
-    color:#1f2937;
-    font-size:28px;
-    font-weight:700;
-">
+        <div style="margin-bottom:32px;">
+            <h1 style="margin:0; color:#1f2937; font-size:28px; font-weight:700;">
                 TicketFlow
             </h1>
-
-            <p style="
-    margin-top:8px;
-    color:#6b7280;
-">
+            <p style="margin-top:8px; color:#6b7280;">
                 Event Management Platform
             </p>
-
         </div>
-        <h2 style="
-    color:#111827;
-    margin-top:0;
-    margin-bottom:16px;
-">
+
+        <h2 style="color:#111827; margin-top:0; margin-bottom:16px;">
             Booking Confirmed
         </h2>
 
-        <p style="
-    color:#4b5563;
-    line-height:1.7;
-">
-            Your ticket has been booked successfully.
-        </p>
-
-        <p style="
-    color:#4b5563;
-    line-height:1.7;
-">
-            Here are your booking details:
+        <p style="color:#4b5563; line-height:1.7;">
+            Your ticket has been booked successfully. Here are your booking details:
         </p>
 
         <div style="
-    border:1px solid #e5e7eb;
-    border-radius:12px;
-    padding:20px;
-    margin-top:24px;
-">
-
-            <p><strong>Event</strong><br>{{eventName}}</p>
-
-            <p><strong>Venue</strong><br>{{venue}}</p>
-
-            <p><strong>Ticket ID</strong><br>{{ticketId}}</p>
-
+            border:1px solid #e5e7eb;
+            border-radius:12px;
+            padding:20px;
+            margin-top:24px;
+        ">
+            <table style="width:100%; border-collapse:collapse;">
+                <tr>
+                    <td style="padding:8px 0; color:#6b7280; width:40%;">Event</td>
+                    <td style="padding:8px 0; color:#111827; font-weight:600;">{{eventName}}</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 0; color:#6b7280;">Venue</td>
+                    <td style="padding:8px 0; color:#111827; font-weight:600;">{{venue}}</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 0; color:#6b7280;">Date & Time</td>
+                    <td style="padding:8px 0; color:#111827; font-weight:600;">{{eventDate}}</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 0; color:#6b7280;">Price</td>
+                    <td style="padding:8px 0; color:#111827; font-weight:600;">{{price}}</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 0; color:#6b7280;">Ticket ID</td>
+                    <td style="padding:8px 0; color:#6366f1; font-weight:600; font-family:monospace;">{{ticketId}}</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 0; color:#6b7280;">Organizer</td>
+                    <td style="padding:8px 0; color:#111827; font-weight:600;">{{organizerEmail}}</td>
+                </tr>
+            </table>
         </div>
 
+        <div style="text-align:center; margin-top:32px;">
+            <img src="cid:qrImage" alt="QR Code" style="width:200px; height:200px; border-radius:8px;" />
+            <p style="color:#9ca3af; font-size:13px; margin-top:8px;">Show this QR at the venue for entry</p>
+        </div>
 
     </div>
 

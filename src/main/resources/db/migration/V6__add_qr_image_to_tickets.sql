@@ -1,0 +1,2 @@
+ALTER TABLE tickets
+ADD COLUMN qr_image BYTEA;

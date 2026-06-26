@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Ticket Checked In</title>
+</head>
+
+<body style="margin:0;padding:32px;background:#f5f7fa;font-family:Segoe UI,Arial,sans-serif;">
+
+<div style="max-width:600px;margin:auto;">
+
+	<div style="background:#fff;border-radius:16px;padding:40px;box-shadow:0 4px 12px rgba(0,0,0,.05);">
+
+		<h1 style="margin-top:0;color:#111827;">
+			TicketFlow
+		</h1>
+
+		<h2 style="color:#16a34a;">
+			✓ Check-in Successful
+		</h2>
+
+		<p>
+			Hi <strong>{{userName}}</strong>,
+		</p>
+
+		<p>
+			Your ticket has been successfully verified at the event entrance.
+		</p>
+
+		<table style="width:100%;margin-top:25px;border-collapse:collapse;">
+			<tr>
+				<td style="padding:8px 0;color:#6b7280;">Event</td>
+				<td style="padding:8px 0;font-weight:600;">{{eventName}}</td>
+			</tr>
+
+			<tr>
+				<td style="padding:8px 0;color:#6b7280;">Venue</td>
+				<td style="padding:8px 0;font-weight:600;">{{venue}}</td>
+			</tr>
+
+			<tr>
+				<td style="padding:8px 0;color:#6b7280;">Event Time</td>
+				<td style="padding:8px 0;font-weight:600;">{{eventDate}}</td>
+			</tr>
+
+			<tr>
+				<td style="padding:8px 0;color:#6b7280;">Checked In At</td>
+				<td style="padding:8px 0;font-weight:600;">{{checkInTime}}</td>
+			</tr>
+		</table>
+
+		<p style="margin-top:32px;">
+			Enjoy the event! 🎉
+		</p>
+
+	</div>
+
+	<div style="text-align:center;margin-top:20px;color:#9ca3af;font-size:13px;">
+		© TicketFlow · Event Management Platform
+	</div>
+
+</div>
+
+</body>
+</html>

@@ -18,6 +18,7 @@ public class TicketMapper {
                 .venue(eventEntity.getVenue())
                 .price(eventEntity.getPrice())
                 .eventDate(eventEntity.getEventDate())
+                .organizerEmail(eventEntity.getOrganizer().getEmail())
                 .build();
 
         return TicketBookedResponse.builder()

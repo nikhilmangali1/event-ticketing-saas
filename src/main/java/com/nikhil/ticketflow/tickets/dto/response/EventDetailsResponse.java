@@ -16,4 +16,5 @@ public class EventDetailsResponse {
     private String venue;
     private BigDecimal price;
     private LocalDateTime eventDate;
+    private String organizerEmail;
 }
