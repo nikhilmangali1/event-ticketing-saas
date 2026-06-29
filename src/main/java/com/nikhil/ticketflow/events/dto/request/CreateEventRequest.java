@@ -1,9 +1,10 @@
-package com.nikhil.ticketflow.event.dto.request;
+package com.nikhil.ticketflow.events.dto.request;
 
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -22,6 +23,8 @@ public class CreateEventRequest {
     private LocalDateTime eventDate;
     private Integer totalSeats;
 
-    @Positive
+    @PositiveOrZero
     private BigDecimal price;
+
+    private MultipartFile image;
 }

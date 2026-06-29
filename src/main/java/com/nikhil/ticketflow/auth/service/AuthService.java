@@ -6,10 +6,13 @@ import com.nikhil.ticketflow.auth.dto.request.RefreshTokenRequest;
 import com.nikhil.ticketflow.auth.dto.request.RegisterRequest;
 import com.nikhil.ticketflow.auth.dto.response.LoginResponse;
 import com.nikhil.ticketflow.auth.dto.response.RegisterResponse;
-import com.nikhil.ticketflow.auth.repository.JpaRefreshTokenRepository;
-import com.nikhil.ticketflow.auth.repository.JpaUserCredentialsRepository;
 import com.nikhil.ticketflow.auth.entity.RefreshTokenEntity;
 import com.nikhil.ticketflow.auth.entity.UserCredentialsEntity;
+import com.nikhil.ticketflow.auth.repository.JpaRefreshTokenRepository;
+import com.nikhil.ticketflow.auth.repository.JpaUserCredentialsRepository;
+import com.nikhil.ticketflow.common.exceptions.BadRequestException;
+import com.nikhil.ticketflow.common.exceptions.ResourceNotFoundException;
+import com.nikhil.ticketflow.email.service.EmailService;
 import com.nikhil.ticketflow.users.entity.UserEntity;
 import com.nikhil.ticketflow.users.enums.UserRole;
 import com.nikhil.ticketflow.users.repository.JpaUserRepository;
@@ -22,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -33,12 +37,13 @@ public class AuthService {
     private final JwtService jwtService;
     private final JpaUserCredentialsRepository userCredentialsRepository;
     private final JpaRefreshTokenRepository refreshTokenRepository;
+    private final EmailService emailService;
 
     @Transactional
     public RegisterResponse register(@Valid RegisterRequest request) {
 
-        if(userRepository.existsByEmail(request.getEmail())){
-            throw new RuntimeException("Email already registered!");
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new BadRequestException("Email already registered!");
         }
 
         UserEntity user = UserEntity.builder()
@@ -57,6 +62,13 @@ public class AuthService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
+        emailService.sendHtmlEmail(
+                savedUser.getEmail(),
+                "Welcome to TicketFlow",
+                "welcome",
+                Map.of("name", savedUser.getName())
+        );
+
         userCredentialsRepository.save(credentials);
 
         return RegisterResponse.builder()
@@ -68,24 +80,24 @@ public class AuthService {
     @Transactional
     public LoginResponse login(@Valid LoginRequest request) {
         UserEntity user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+                .orElseThrow(() -> new BadRequestException("Invalid email or password"));
 
         UserCredentialsEntity credentials = userCredentialsRepository.findByUser(user)
-                .orElseThrow(() -> new RuntimeException("Credentials not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Credentials not found"));
 
-        if(!encoder.matches(request.getPassword(), credentials.getPasswordHash())){
-            throw new RuntimeException("Invalid email or password");
+        if (!encoder.matches(request.getPassword(), credentials.getPasswordHash())) {
+            throw new ResourceNotFoundException("Invalid email or password");
         }
 
         String accessToken = jwtService.generateToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
         refreshTokenRepository.deleteAllByUser(user);
         refreshTokenRepository.save(RefreshTokenEntity.builder()
-                        .user(user)
-                        .refreshToken(refreshToken)
-                        .expiresAt(LocalDateTime.now().plusSeconds(jwtService.getRefreshValidity()))
-                        .revoked(false)
-                        .createdAt(LocalDateTime.now())
+                .user(user)
+                .refreshToken(refreshToken)
+                .expiresAt(LocalDateTime.now().plusSeconds(jwtService.getRefreshValidity()))
+                .revoked(false)
+                .createdAt(LocalDateTime.now())
                 .build());
         String userId = jwtService.extractUserId(accessToken).toString();
 
@@ -103,25 +115,25 @@ public class AuthService {
     public LoginResponse refreshToken(@Valid RefreshTokenRequest request) {
         String refreshToken = request.getRefreshToken();
 
-        if(!jwtService.isTokenValid(refreshToken)){
-            throw new RuntimeException("Invalid refreshToken token");
+        if (!jwtService.isTokenValid(refreshToken)) {
+            throw new BadRequestException("Invalid refreshToken token");
         }
 
         Claims claims = jwtService.extractClaims(refreshToken);
         String tokenType = claims.get("tokenType", String.class);
-        if(!"REFRESH".equals(tokenType)){
+        if (!"REFRESH".equals(tokenType)) {
             throw new RuntimeException("Invalid token type");
         }
 
         RefreshTokenEntity tokenEntity = refreshTokenRepository.findByRefreshToken(refreshToken)
-                .orElseThrow(() -> new RuntimeException("refreshToken token not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("refreshToken token not found"));
 
-        if(tokenEntity.getRevoked()){
-            throw new RuntimeException("Refresh token revoked");
+        if (tokenEntity.getRevoked()) {
+            throw new BadRequestException("Refresh token revoked");
         }
 
-        if(tokenEntity.getExpiresAt().isBefore(LocalDateTime.now())){
-            throw new RuntimeException("Refresh token expired");
+        if (tokenEntity.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Refresh token expired");
         }
 
         UserEntity user = tokenEntity.getUser();
@@ -130,11 +142,11 @@ public class AuthService {
         refreshTokenRepository.delete(tokenEntity);
         String newRefreshToken = jwtService.generateRefreshToken(user);
         refreshTokenRepository.save(RefreshTokenEntity.builder()
-                        .user(user)
-                        .refreshToken(newRefreshToken)
-                        .expiresAt(LocalDateTime.now().plusSeconds(jwtService.getRefreshValidity()))
-                        .revoked(false)
-                        .createdAt(LocalDateTime.now())
+                .user(user)
+                .refreshToken(newRefreshToken)
+                .expiresAt(LocalDateTime.now().plusSeconds(jwtService.getRefreshValidity()))
+                .revoked(false)
+                .createdAt(LocalDateTime.now())
                 .build());
 
         return LoginResponse.builder()
@@ -150,7 +162,7 @@ public class AuthService {
     @Transactional
     public void logout(@Valid LogoutRequest request) {
         RefreshTokenEntity tokenEntity = refreshTokenRepository.findByRefreshToken(request.getRefreshToken())
-                .orElseThrow(() -> new RuntimeException("Refresh token not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Refresh token not found"));
 
         refreshTokenRepository.delete(tokenEntity);
     }

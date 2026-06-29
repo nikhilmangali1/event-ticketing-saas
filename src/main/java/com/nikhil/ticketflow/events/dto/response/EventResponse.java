@@ -1,4 +1,4 @@
-package com.nikhil.ticketflow.event.dto.response;
+package com.nikhil.ticketflow.events.dto.response;
 
 import lombok.Builder;
 import lombok.Data;
@@ -21,4 +21,5 @@ public class EventResponse {
     private Integer totalSeats;
     private Integer availableSeats;
     private BigDecimal price;
+    private String imageUrl;
 }

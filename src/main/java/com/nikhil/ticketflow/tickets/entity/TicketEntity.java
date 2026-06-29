@@ -1,8 +1,9 @@
 package com.nikhil.ticketflow.tickets.entity;
 
-import com.nikhil.ticketflow.event.entity.EventEntity;
+import com.nikhil.ticketflow.events.entity.EventEntity;
 import com.nikhil.ticketflow.tickets.enums.BookingStatus;
 import com.nikhil.ticketflow.users.entity.UserEntity;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -18,13 +19,17 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
 @Table(name = "tickets")
-@Getter @Setter @Builder
+@Getter
+@Setter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class TicketEntity {
@@ -42,7 +47,13 @@ public class TicketEntity {
     private UserEntity user;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private BookingStatus bookingStatus;
 
     private LocalDateTime bookingTime;
+
+    private String qrCodeText;
+
+    @JdbcTypeCode(SqlTypes.VARBINARY)
+    private byte[] qrImage;
 }

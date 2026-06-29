@@ -1,6 +1,5 @@
 package com.nikhil.ticketflow.tickets.repository;
 
-import com.nikhil.ticketflow.event.entity.EventEntity;
 import com.nikhil.ticketflow.tickets.entity.TicketEntity;
 import com.nikhil.ticketflow.tickets.enums.BookingStatus;
 import org.springframework.data.jpa.repository.JpaRepository;

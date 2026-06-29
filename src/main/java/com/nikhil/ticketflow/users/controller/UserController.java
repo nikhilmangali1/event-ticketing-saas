@@ -1,30 +1,42 @@
 package com.nikhil.ticketflow.users.controller;
 
-import com.nikhil.ticketflow.users.entity.UserEntity;
+import com.nikhil.ticketflow.users.dto.response.MyDetailsResponse;
+import com.nikhil.ticketflow.users.dto.response.UserOrganizerResponse;
 import com.nikhil.ticketflow.users.service.UserService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/users")
 public class UserController {
 
     private final UserService userService;
 
-    public UserController(UserService userService) {
-        this.userService = userService;
-        log.info("---User service injected---");
+    @PreAuthorize("hasRole('USER')")
+    @PostMapping("/organizer-request")
+    public ResponseEntity<UserOrganizerResponse> requestOrganizerRole(@RequestParam String reason) {
+        return ResponseEntity.ok(userService.requestOrganizerRole(reason));
     }
 
-    @PreAuthorize("hasAnyRole('USER','ADMIN','ORGANIZER')")
-    @GetMapping
-    public List<UserEntity> getAllUsers(){
-        return userService.getAllUsers();
+
+    @GetMapping("/organizer-request")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<UserOrganizerResponse> getMyRequest() {
+        return ResponseEntity.ok(userService.getMyRequest());
+    }
+
+    @PreAuthorize("hasAnyRole('USER','ORGANIZER','ADMIN')")
+    @GetMapping("/profile")
+    public ResponseEntity<MyDetailsResponse> getMyDetails() {
+        return ResponseEntity.ok(userService.getMyDetails());
     }
 }

@@ -1,0 +1,2 @@
+ALTER TABLE tickets
+ADD COLUMN qr_code_text VARCHAR(255);
